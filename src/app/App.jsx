@@ -1,19 +1,14 @@
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import AppRoutes from "./routes";
-import Header from "../components/common/Header";
-import theme from "../theme/theme";
+import Navbar from "../components/common/Navbar";
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div className="app-shell">
-        <Header />
-        <main className="app-content">
-          <AppRoutes />
-        </main>
-      </div>
-    </ThemeProvider>
+    <div className="app-shell">
+      <Navbar />
+      <main className="app-content">
+        <AppRoutes />
+      </main>
+    </div>
   );
 };
 
