@@ -22,7 +22,7 @@ const navLinks = [
 
 const Header = () => {
   const [open, setOpen] = useState(false);
-  const role = getRole();
+  const role = (getRole() || "").toLowerCase();
   const visibleLinks = role === "hod" || role === "admin"
     ? [...navLinks.slice(0, 3), { label: "HOD", to: "/hod" }, navLinks[3]]
     : navLinks;

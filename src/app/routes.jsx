@@ -7,6 +7,9 @@ import HodDashboard from "../pages/HodDashboard";
 import ProjectBot from "../pages/ProjectBot";
 import Landing from "../pages/Landing";
 import ProtectedRoute from "../components/common/ProtectedRoute";
+import StudentDashboard from "../pages/dashboards/StudentDashboard";
+import HodDashboardPage from "../pages/dashboards/HodDashboard";
+import AdminDashboard from "../pages/dashboards/AdminDashboard";
 
 const AppRoutes = () => {
   return (
@@ -14,6 +17,30 @@ const AppRoutes = () => {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route
+        path="/student"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/hod-dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["HOD"]}>
+            <HodDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin-dashboard"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/marketplace"
         element={
