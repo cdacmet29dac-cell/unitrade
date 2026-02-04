@@ -7,7 +7,12 @@ const Login = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     setToken("demo-token", role);
-    window.location.href = "/marketplace";
+    const redirectMap = {
+      hod: "/hod",
+      admin: "/marketplace",
+      student: "/marketplace",
+    };
+    window.location.href = redirectMap[role] || "/marketplace";
   };
 
   return (

@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { NavLink } from "react-router-dom";
+import { getRole } from "../../utils/storage";
 
 const navLinks = [
   { label: "Notes", to: "/notes" },
@@ -21,6 +22,10 @@ const navLinks = [
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+  const role = getRole();
+  const visibleLinks = role === "hod" || role === "admin"
+    ? [...navLinks.slice(0, 3), { label: "HOD", to: "/hod" }, navLinks[3]]
+    : navLinks;
 
   const drawerContent = useMemo(
     () => (
@@ -29,7 +34,7 @@ const Header = () => {
           UniTrade
         </Typography>
         <Stack spacing={1}>
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Button
               key={link.label}
               component={NavLink}
@@ -47,7 +52,7 @@ const Header = () => {
         </Stack>
       </Box>
     ),
-    []
+    [visibleLinks]
   );
 
   return (
@@ -64,7 +69,7 @@ const Header = () => {
           spacing={2}
           sx={{ display: { xs: "none", md: "flex" } }}
         >
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Button
               key={link.label}
               component={NavLink}

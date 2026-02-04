@@ -5,11 +5,13 @@ import Marketplace from "../pages/Marketplace";
 import Notes from "../pages/Notes";
 import HodDashboard from "../pages/HodDashboard";
 import ProjectBot from "../pages/ProjectBot";
+import Landing from "../pages/Landing";
 import ProtectedRoute from "../components/common/ProtectedRoute";
 
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
