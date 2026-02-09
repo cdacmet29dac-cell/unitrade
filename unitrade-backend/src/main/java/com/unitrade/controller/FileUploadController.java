@@ -40,16 +40,39 @@ public class FileUploadController {
             dir.mkdirs();
         }
 
-        // Full file path
-        String filePath = uploadDir + "/id-cards/" + file.getOriginalFilename();
+        // 🔐 Unique file name
+        String uniqueFileName =
+                verificationId + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        String filePath = uploadDir + "/id-cards/" + uniqueFileName;
 
         // Save file
         file.transferTo(new File(filePath));
 
-        // Save RELATIVE path in DB (important)
-        verification.setIdCardPath("id-cards/" + file.getOriginalFilename());
+        // Save relative path
+        verification.setIdCardPath("id-cards/" + uniqueFileName);
         verificationRepository.save(verification);
 
         return "ID card uploaded successfully";
+    }
+    
+    @PostMapping("/upload/product")
+    public String uploadProductImage(@RequestParam("file") MultipartFile file)
+            throws IOException {
+
+        File dir = new File(uploadDir + "/products");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        String uniqueName =
+                System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        String filePath = uploadDir + "/products/" + uniqueName;
+
+        file.transferTo(new File(filePath));
+
+        // return RELATIVE path
+        return "products/" + uniqueName;
     }
 }

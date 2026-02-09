@@ -7,9 +7,10 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Find HOD by college and department
+    Optional<User> findByEmail(String email);
+
     Optional<User> findByRole_NameAndCollege_IdAndDepartment_Id(
-            String roleName,
+            String role,
             Long collegeId,
             Long departmentId
     );

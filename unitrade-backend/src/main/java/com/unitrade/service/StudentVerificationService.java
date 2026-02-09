@@ -51,6 +51,16 @@ public class StudentVerificationService {
     }
 
     /**
+     * 🔹 Fetch verification using student userId
+     * Used during ID upload
+     */
+    public StudentVerification getVerificationByUser(Long userId) {
+        return verificationRepository.findByStudent_Id(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Verification not found for user"));
+    }
+
+    /**
      * Approve / Hold / Reject a student and notify via WhatsApp.
      */
     @Transactional
@@ -74,12 +84,11 @@ public class StudentVerificationService {
         // 🔔 WhatsApp notification
         String message = buildMessage(student.getName(), status, remarks);
 
-        // ⚠️ TEMP: Replace with student.getPhone() once phone field is added
+        System.out.println("🔔 Sending WhatsApp to: " + student.getPhone());
         notificationService.sendWhatsApp(
-        	    student.getPhone(),
-        	    message
-        	);
-
+                student.getPhone(),
+                message
+        );
 
         return verificationRepository.save(verification);
     }
