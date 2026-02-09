@@ -3,10 +3,15 @@ package com.unitrade.repository;
 import com.unitrade.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-/**
- * This interface is used to access the users table.
- * Spring automatically creates the implementation.
- */
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
-    // No methods needed for now
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByRole_NameAndCollege_IdAndDepartment_Id(
+            String role,
+            Long collegeId,
+            Long departmentId
+    );
 }
