@@ -175,3 +175,24 @@ a {
   list-style: disc;
   padding-left: 20px;
 }
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.badge--success {
+  background: #d4f4dd;
+  color: #1e7e34;
+}
+
+.badge--warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge--danger {
+  background: #f8d7da;
+  color: #721c24;
+}

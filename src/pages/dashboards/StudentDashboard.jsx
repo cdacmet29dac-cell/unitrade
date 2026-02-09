@@ -1,97 +1,101 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  Stack,
-  Typography,
-} from "@mui/material";
-import { motion } from "framer-motion";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import StorefrontIcon from "@mui/icons-material/Storefront";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import Inventory2Icon from "@mui/icons-material/Inventory2";
-import RequestPageIcon from "@mui/icons-material/RequestPage";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-import StatCard from "../../components/dashboard/StatCard";
-
-const menuItems = [
-  { label: "Dashboard", icon: <Inventory2Icon />, path: "/student" },
-  { label: "Marketplace", icon: <StorefrontIcon />, path: "/marketplace" },
-  { label: "AI Bot", icon: <AutoAwesomeIcon />, path: "/chatbot" },
-];
+import api from "../../services/api";
+import { getUserId } from "../../utils/storage";
 
 const StudentDashboard = () => {
+  const studentId = getUserId();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ---------------- LOAD MY PRODUCTS ----------------
+  useEffect(() => {
+    if (!studentId) return;
+
+    api
+      .get(`/products/student/${studentId}`)
+      .then((res) => {
+        setProducts(res.data);
+      })
+      .catch(() => {
+        alert("Failed to load your products");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [studentId]);
+
+  // ---------------- DELETE PRODUCT ----------------
+  const deleteProduct = async (productId) => {
+    if (!window.confirm("Delete this product?")) return;
+
+    try {
+      await api.delete(`/products/${productId}/student/${studentId}`);
+      setProducts(products.filter((p) => p.id !== productId));
+    } catch {
+      alert("Failed to delete product");
+    }
+  };
+
   return (
-    <DashboardLayout menuItems={menuItems}>
-      <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Welcome back, Student
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Track your listings, requests, and saved components.
-          </Typography>
-        </Box>
+    <DashboardLayout role="STUDENT">
+      <div className="dashboard-header">
+        <h2>My Products</h2>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<Inventory2Icon color="primary" />} label="My Listings" value="08" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<RequestPageIcon color="primary" />} label="My Requests" value="12" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<FavoriteIcon color="primary" />} label="Saved Items" value="05" />
-          </Grid>
-        </Grid>
+        <a href="/student/add" className="btn btn--primary">
+          + Add Product
+        </a>
+      </div>
 
-        <Card sx={{ bgcolor: "background.paper" }}>
-          <CardContent>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-              <Button variant="contained" startIcon={<AddCircleOutlineIcon />}>
-                Create Listing
-              </Button>
-              <Button variant="outlined" color="secondary" startIcon={<StorefrontIcon />}>
-                Browse Marketplace
-              </Button>
-              <Button variant="text" startIcon={<AutoAwesomeIcon />}>
-                Try AI Bot
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
+      {loading ? (
+        <p>Loading...</p>
+      ) : products.length === 0 ? (
+        <p className="text-muted">You have not added any products yet.</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Price</th>
+              <th></th>
+            </tr>
+          </thead>
 
-        <Card
-          component={motion.div}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          sx={{ bgcolor: "background.paper" }}
-        >
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Recent activity
-            </Typography>
-            <List>
-              {[
-                "Request approved for Arduino Nano kit.",
-                "New listing submitted for verification.",
-                "Saved Raspberry Pi sensor bundle.",
-              ].map((item) => (
-                <ListItem key={item} divider>
-                  <ListItemText primary={item} secondary="2 hours ago" />
-                </ListItem>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
-      </Stack>
+          <tbody>
+            {products.map((p) => (
+              <tr key={p.id}>
+                <td>{p.title}</td>
+
+                <td>
+                  <span
+                    className={
+                      p.status === "APPROVED"
+                        ? "badge badge--success"
+                        : p.status === "PENDING"
+                          ? "badge badge--warning"
+                          : "badge badge--danger"
+                    }
+                  >
+                    {p.status}
+                  </span>
+                </td>
+
+                <td>₹{p.price}</td>
+
+                <td>
+                  <button
+                    className="btn btn--danger btn--sm"
+                    onClick={() => deleteProduct(p.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </DashboardLayout>
   );
 };

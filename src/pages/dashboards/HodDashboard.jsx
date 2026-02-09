@@ -1,87 +1,66 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
-import AssignmentIcon from "@mui/icons-material/Assignment";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-import StatCard from "../../components/dashboard/StatCard";
-
-const menuItems = [
-  { label: "Dashboard", icon: <AssignmentIcon />, path: "/hod-dashboard" },
-  { label: "Notes", icon: <AssignmentIcon />, path: "/notes" },
-  { label: "Marketplace", icon: <AssignmentIcon />, path: "/marketplace" },
-];
-
-const verificationItems = [
-  { id: 1, title: "ESP32 Starter Kit", owner: "Aditi N.", status: "Pending" },
-  { id: 2, title: "Digital Oscilloscope", owner: "Rohan P.", status: "Pending" },
-  { id: 3, title: "Sensor Pack", owner: "Meera S.", status: "Pending" },
-];
+import api from "../../services/api";
+import { getUserId } from "../../utils/storage";
 
 const HodDashboard = () => {
+  const hodId = getUserId(); // ✅ correct
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    if (!hodId) return;
+
+    api
+      .get(`/products/hod/${hodId}`)
+      .then((res) => setProducts(res.data))
+      .catch(() => alert("Failed to load pending products"));
+  }, [hodId]);
+
+  const updateStatus = async (id, status) => {
+    try {
+      await api.put(`/products/${id}/status?status=${status}`);
+      setProducts(products.filter((p) => p.id !== id));
+    } catch {
+      alert("Action failed");
+    }
+  };
+
   return (
-    <DashboardLayout menuItems={menuItems}>
-      <Stack spacing={4}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Verification queue
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Review and approve listings before they go live.
-          </Typography>
-        </Box>
+    <DashboardLayout role="HOD">
+      <h2>Pending Products</h2>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<AssignmentIcon color="primary" />} label="Pending" value="14" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<CheckCircleIcon color="primary" />} label="Approved" value="86" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<CancelIcon color="primary" />} label="Rejected" value="09" />
-          </Grid>
-        </Grid>
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Student</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-        <Stack direction="row" spacing={2}>
-          {["Pending", "Approved", "Rejected"].map((status) => (
-            <Chip key={status} label={status} color={status === "Pending" ? "secondary" : "default"} />
+        <tbody>
+          {products.map((p) => (
+            <tr key={p.id}>
+              <td>{p.name}</td> {/* ✅ FIXED */}
+              <td>{p.student?.name || "-"}</td>
+              <td>
+                <button onClick={() => updateStatus(p.id, "APPROVED")}>
+                  Approve
+                </button>
+                <button onClick={() => updateStatus(p.id, "REJECTED")}>
+                  Reject
+                </button>
+              </td>
+            </tr>
           ))}
-        </Stack>
 
-        <Grid container spacing={3}>
-          {verificationItems.map((item) => (
-            <Grid item xs={12} md={4} key={item.id}>
-              <Card sx={{ bgcolor: "background.paper" }}>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Typography variant="h6">{item.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Listed by {item.owner}
-                    </Typography>
-                    <Stack direction="row" spacing={1}>
-                      <Button variant="contained" startIcon={<CheckCircleIcon />}>
-                        Approve
-                      </Button>
-                      <Button variant="outlined" color="secondary" startIcon={<CancelIcon />}>
-                        Reject
-                      </Button>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Stack>
+          {products.length === 0 && (
+            <tr>
+              <td colSpan="3">No pending products</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </DashboardLayout>
   );
 };

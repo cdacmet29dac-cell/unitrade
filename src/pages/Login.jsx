@@ -1,18 +1,46 @@
 import { useState } from "react";
+import api from "../services/api";
 import { setToken } from "../utils/storage";
 
 const Login = () => {
-  const [role, setRole] = useState("student");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setToken("demo-token", role);
-    const redirectMap = {
-      hod: "/hod",
-      admin: "/marketplace",
-      student: "/marketplace",
-    };
-    window.location.href = redirectMap[role] || "/marketplace";
+
+    try {
+      const res = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      const token = res.data.token;
+
+      // 1️⃣ Save token
+      setToken(token);
+
+      // 2️⃣ Decode role DIRECTLY (no race condition)
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const role = payload.role;
+
+      // 3️⃣ Redirect
+      if (role === "ROLE_STUDENT") {
+        window.location.href = "/marketplace";
+      } else if (role === "ROLE_HOD") {
+        window.location.href = "/hod";
+      } else if (role === "ROLE_ADMIN") {
+        window.location.href = "/admin";
+      } else {
+        alert("Unknown role in token");
+      }
+
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Login failed. Please check credentials."
+      );
+    }
   };
 
   return (
@@ -22,27 +50,35 @@ const Login = () => {
         <p className="text-muted">
           Sign in to access notes, marketplace listings, and project insights.
         </p>
+
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Email
-            <input type="email" placeholder="student@college.edu" required />
+            <input
+              type="email"
+              placeholder="student@college.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </label>
+
           <label>
             Password
-            <input type="password" placeholder="••••••••" required />
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </label>
-          <label>
-            Role
-            <select value={role} onChange={(event) => setRole(event.target.value)}>
-              <option value="student">Student</option>
-              <option value="hod">HOD</option>
-              <option value="admin">Admin</option>
-            </select>
-          </label>
+
           <button className="btn btn--primary" type="submit">
             Login
           </button>
         </form>
+
         <div className="auth-footer">
           <a href="/register">Create an account</a>
         </div>

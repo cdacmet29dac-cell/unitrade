@@ -14,7 +14,7 @@ const theme = createTheme({
       paper: "#111A2E",
     },
     text: {
-      primary: "#F8FAFC",
+      primary: "#fe2b06",
       secondary: "#CBD5F5",
     },
   },
@@ -22,7 +22,7 @@ const theme = createTheme({
     borderRadius: 16,
   },
   typography: {
-    fontFamily: "\"Inter\", \"Segoe UI\", system-ui, sans-serif",
+    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
     h1: {
       fontWeight: 700,
       letterSpacing: "-0.02em",
