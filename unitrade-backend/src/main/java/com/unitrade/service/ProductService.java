@@ -1,5 +1,6 @@
 package com.unitrade.service;
 
+import com.unitrade.dto.ProductRequest;
 import com.unitrade.entity.Product;
 import com.unitrade.entity.User;
 import com.unitrade.enums.ProductStatus;
@@ -25,8 +26,9 @@ public class ProductService {
         this.notificationService = notificationService;
     }
 
-    // STUDENT: add product
-    public Product addProduct(Product product, Long studentId) {
+    // ================= STUDENT =================
+
+    public Product addProduct(ProductRequest request, Long studentId) {
 
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -39,6 +41,14 @@ public class ProductService {
                 )
                 .orElseThrow(() -> new RuntimeException("HOD not found"));
 
+        Product product = new Product();
+        product.setTitle(request.getTitle());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+
+        // ✅ save image paths (comma separated)
+        product.setImages(String.join(",", request.getImages()));
+
         product.setStudent(student);
         product.setHod(hod);
         product.setStatus(ProductStatus.PENDING_HOD);
@@ -46,42 +56,10 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    // STUDENT: my products
     public List<Product> getStudentProducts(Long studentId) {
         return productRepository.findByStudent_Id(studentId);
     }
 
-    // MARKETPLACE: live products
-    public List<Product> getLiveProducts() {
-        return productRepository.findByStatus(ProductStatus.LIVE);
-    }
-
-    // HOD: pending products
-    public List<Product> getPendingForHod(Long hodId) {
-        return productRepository.findByHod_IdAndStatus(hodId, ProductStatus.PENDING_HOD);
-    }
-
-    // HOD: approve / reject
-    @Transactional
-    public Product updateStatus(Long productId, ProductStatus status) {
-
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
-
-        product.setStatus(status == ProductStatus.APPROVED
-                ? ProductStatus.LIVE
-                : ProductStatus.REJECTED);
-
-        notificationService.sendWhatsApp(
-                product.getStudent().getPhone(),
-                "Your product '" + product.getTitle() +
-                        "' has been " + product.getStatus()
-        );
-
-        return productRepository.save(product);
-    }
-
-    // STUDENT: delete
     public void deleteProduct(Long productId, Long studentId) {
 
         Product product = productRepository.findById(productId)
@@ -92,5 +70,40 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+    }
+
+    // ================= MARKETPLACE =================
+
+    public List<Product> getLiveProducts() {
+        return productRepository.findByStatus(ProductStatus.LIVE);
+    }
+
+    // ================= HOD =================
+
+    public List<Product> getPendingForHod(Long hodId) {
+        return productRepository.findByHod_IdAndStatus(
+                hodId, ProductStatus.PENDING_HOD
+        );
+    }
+
+    @Transactional
+    public Product updateStatus(Long productId, ProductStatus status) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (status != ProductStatus.LIVE && status != ProductStatus.REJECTED) {
+            throw new RuntimeException("Invalid status");
+        }
+
+        product.setStatus(status);
+
+        // 🔔 WhatsApp notification
+        notificationService.sendWhatsApp(
+                product.getStudent().getPhone(),
+                "Your product '" + product.getTitle() + "' is now " + status
+        );
+
+        return productRepository.save(product);
     }
 }
