@@ -1,100 +1,148 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
-import api from "../../services/api";
+import api, { fileUrl } from "../../services/api";
 import { getUserId } from "../../utils/storage";
+
+import {
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Button,
+  Chip,
+  Stack,
+} from "@mui/material";
+
+const menuItems = [
+  { label: "My Dashboard", path: "/student" },
+  { label: "Add Product", path: "/student/add" },
+  { label: "Marketplace", path: "/marketplace" },
+  { label: "Notes", path: "/notes" },
+  { label: "AI Project Bot", path: "/chatbot" },
+];
+
+const statusColor = (status) => {
+  switch (status) {
+    case "LIVE":
+      return "success";
+    case "PENDING_HOD":
+      return "warning";
+    case "REJECTED":
+      return "error";
+    default:
+      return "default";
+  }
+};
 
 const StudentDashboard = () => {
   const studentId = getUserId();
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  // ---------------- LOAD MY PRODUCTS ----------------
   useEffect(() => {
-    if (!studentId) return;
-
-    api
-      .get(`/products/student/${studentId}`)
-      .then((res) => {
-        setProducts(res.data);
-      })
-      .catch(() => {
-        alert("Failed to load your products");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    api.get(`/products/student/${studentId}`).then((res) => {
+      setProducts(res.data);
+    });
   }, [studentId]);
 
-  // ---------------- DELETE PRODUCT ----------------
-  const deleteProduct = async (productId) => {
-    if (!window.confirm("Delete this product?")) return;
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
 
-    try {
-      await api.delete(`/products/${productId}/student/${studentId}`);
-      setProducts(products.filter((p) => p.id !== productId));
-    } catch {
-      alert("Failed to delete product");
-    }
+    await api.delete(`/products/${id}/student/${studentId}`);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   return (
-    <DashboardLayout role="STUDENT">
-      <div className="dashboard-header">
-        <h2>My Products</h2>
+    <DashboardLayout menuItems={menuItems}>
+      {/* Header */}
+      <Stack spacing={1} mb={4}>
+        <Typography variant="h4" fontWeight={700}>
+          My Products
+        </Typography>
+        <Typography color="text.secondary">
+          Products you have listed for HOD approval or sale
+        </Typography>
+      </Stack>
 
-        <a href="/student/add" className="btn btn--primary">
-          + Add Product
-        </a>
-      </div>
+      {/* Grid */}
+      <Grid container spacing={3}>
+        {products.map((p) => (
+          <Grid item xs={12} sm={6} md={3} key={p.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "0.3s",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.35)",
+                },
+              }}
+            >
+              {/* Image */}
+              <CardMedia
+                component="img"
+                height="180"
+                image={
+                  p.images
+                    ? fileUrl(p.images)
+                    : "https://via.placeholder.com/400x300?text=No+Image"
+                }
+                alt={p.title}
+              />
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : products.length === 0 ? (
-        <p className="text-muted">You have not added any products yet.</p>
-      ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Price</th>
-              <th></th>
-            </tr>
-          </thead>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Stack spacing={1}>
+                  <Typography fontWeight={600} noWrap>
+                    {p.title}
+                  </Typography>
 
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.id}>
-                <td>{p.title}</td>
-
-                <td>
-                  <span
-                    className={
-                      p.status === "APPROVED"
-                        ? "badge badge--success"
-                        : p.status === "PENDING"
-                          ? "badge badge--warning"
-                          : "badge badge--danger"
-                    }
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      height: 36,
+                      overflow: "hidden",
+                    }}
                   >
-                    {p.status}
-                  </span>
-                </td>
+                    {p.description || "No description provided"}
+                  </Typography>
 
-                <td>₹{p.price}</td>
+                  <Typography variant="h6">₹{p.price}</Typography>
 
-                <td>
-                  <button
-                    className="btn btn--danger btn--sm"
-                    onClick={() => deleteProduct(p.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  <Chip
+                    label={p.status.replace("_", " ")}
+                    color={statusColor(p.status)}
+                    size="small"
+                    sx={{ width: "fit-content" }}
+                  />
+                </Stack>
+              </CardContent>
+
+              {/* Actions */}
+              <Box p={2}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  onClick={() => deleteProduct(p.id)}
+                >
+                  Delete Product
+                </Button>
+              </Box>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Empty State */}
+      {products.length === 0 && (
+        <Typography color="text.secondary">
+          You haven’t added any products yet.
+        </Typography>
       )}
     </DashboardLayout>
   );

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -10,109 +11,172 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Tabs,
+  Tab,
   Typography,
 } from "@mui/material";
+
 import PeopleIcon from "@mui/icons-material/People";
 import AssignmentIcon from "@mui/icons-material/Assignment";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
+import InventoryIcon from "@mui/icons-material/Inventory";
+
 import DashboardLayout from "../../components/dashboard/DashboardLayout";
 import StatCard from "../../components/dashboard/StatCard";
 
 const menuItems = [
-  { label: "Dashboard", icon: <AssignmentIcon />, path: "/admin-dashboard" },
-  { label: "Marketplace", icon: <AssignmentIcon />, path: "/marketplace" },
-  { label: "Notes", icon: <AssignmentIcon />, path: "/notes" },
+  { label: "Dashboard", path: "/admin" },
+  { label: "Marketplace", path: "/marketplace" },
+  { label: "Notes", path: "/notes" },
+  { label: "Add Notes", path: "/admin/notes-upload" }, // ✅ THIS
 ];
 
-const approvals = [
-  { id: 1, item: "Logic Analyzer", status: "Approved", time: "15 min ago" },
-  { id: 2, item: "Embedded Toolkit", status: "Approved", time: "45 min ago" },
-  { id: 3, item: "Power Supply", status: "Approved", time: "2 hours ago" },
-];
+/* ---------------- TEMP DATA (SAFE TO REPLACE WITH API) ---------------- */
+
+const stats = {
+  users: 124,
+  products: 412,
+  pending: 26,
+};
 
 const users = [
-  { id: 1, name: "Arjun K.", role: "Student", listings: 3 },
-  { id: 2, name: "Meera S.", role: "HOD", listings: 1 },
-  { id: 3, name: "Isha M.", role: "Student", listings: 5 },
+  { id: 1, name: "Arjun K.", role: "STUDENT", status: "ACTIVE" },
+  { id: 2, name: "Meera S.", role: "HOD", status: "ACTIVE" },
+  { id: 3, name: "Isha M.", role: "STUDENT", status: "BLOCKED" },
+];
+
+const verifications = [
+  { id: 1, name: "Rahul P.", status: "PENDING" },
+  { id: 2, name: "Sneha M.", status: "APPROVED" },
+];
+
+const products = [
+  { id: 1, title: "Logic Analyzer", status: "LIVE" },
+  { id: 2, title: "Power Supply", status: "REJECTED" },
 ];
 
 const AdminDashboard = () => {
+  const [tab, setTab] = useState(0);
+
   return (
     <DashboardLayout menuItems={menuItems}>
       <Stack spacing={4}>
+        {/* ---------------- HEADER ---------------- */}
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            Admin overview
+          <Typography variant="h4" fontWeight={700}>
+            Admin Control Panel
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Monitor marketplace health, approvals, and user activity.
+          <Typography color="text.secondary">
+            Full system visibility and moderation
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<AssignmentIcon color="primary" />} label="Total Listings" value="412" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<PeopleIcon color="primary" />} label="Pending Approvals" value="26" />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <StatCard icon={<SwapHorizIcon color="primary" />} label="Transactions" value="188" />
-          </Grid>
-        </Grid>
+        {/* ---------------- TABS ---------------- */}
+        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
+          <Tab label="Overview" />
+          <Tab label="Users" />
+          <Tab label="Student Verifications" />
+          <Tab label="Products" />
+        </Tabs>
 
-        <Card sx={{ bgcolor: "background.paper" }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Recent approvals
-            </Typography>
-            <Stack spacing={1}>
-              {approvals.map((item) => (
-                <Stack
-                  key={item.id}
-                  direction={{ xs: "column", sm: "row" }}
-                  justifyContent="space-between"
-                  spacing={1}
-                >
-                  <Typography>{item.item}</Typography>
-                  <Typography color="text.secondary">{item.time}</Typography>
-                </Stack>
-              ))}
-            </Stack>
-          </CardContent>
-        </Card>
+        {/* ================= OVERVIEW ================= */}
+        {tab === 0 && (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <StatCard
+                icon={<PeopleIcon color="primary" />}
+                label="Total Users"
+                value={stats.users}
+              />
+            </Grid>
 
-        <Card sx={{ bgcolor: "background.paper" }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              Users
-            </Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Listings</TableCell>
-                  <TableCell align="right">Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.name}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.listings}</TableCell>
-                    <TableCell align="right">
-                      <Button variant="outlined" color="secondary" size="small">
-                        Block
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+            <Grid item xs={12} md={4}>
+              <StatCard
+                icon={<InventoryIcon color="primary" />}
+                label="Total Products"
+                value={stats.products}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <StatCard
+                icon={<AssignmentIcon color="primary" />}
+                label="Pending Approvals"
+                value={stats.pending}
+              />
+            </Grid>
+          </Grid>
+        )}
+
+        {/* ================= USERS ================= */}
+        {tab === 1 && (
+          <Card>
+            <CardContent>
+              <Typography variant="h6" mb={2}>
+                Users
+              </Typography>
+
+              <Box sx={{ overflowX: "auto" }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Name</TableCell>
+                      <TableCell>Role</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="right">Action</TableCell>
+                    </TableRow>
+                  </TableHead>
+
+                  <TableBody>
+                    {users.map((u) => (
+                      <TableRow key={u.id}>
+                        <TableCell>{u.name}</TableCell>
+                        <TableCell>{u.role}</TableCell>
+                        <TableCell>{u.status}</TableCell>
+                        <TableCell align="right">
+                          <Button size="small" variant="outlined">
+                            {u.status === "ACTIVE" ? "Block" : "Unblock"}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ================= STUDENT VERIFICATIONS ================= */}
+        {tab === 2 && (
+          <Stack spacing={2}>
+            {verifications.map((v) => (
+              <Card key={v.id}>
+                <CardContent>
+                  <Typography fontWeight={600}>{v.name}</Typography>
+                  <Typography color="text.secondary">
+                    Status: {v.status}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
+
+        {/* ================= PRODUCTS ================= */}
+        {tab === 3 && (
+          <Stack spacing={2}>
+            {products.map((p) => (
+              <Card key={p.id}>
+                <CardContent>
+                  <Typography fontWeight={600}>{p.title}</Typography>
+                  <Typography color="text.secondary">
+                    Status: {p.status}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
       </Stack>
     </DashboardLayout>
   );

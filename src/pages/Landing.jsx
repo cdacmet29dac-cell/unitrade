@@ -54,17 +54,24 @@ const features = [
   },
 ];
 
-const steps = ["Sign up with college email", "List or request equipment", "Get verified + delivered"];
+const steps = [
+  "Sign up with college email",
+  "List or request equipment",
+  "Get verified + delivered",
+];
 
 const Landing = () => {
   return (
     <Box sx={{ bgcolor: "background.default", color: "text.primary" }}>
-      <Container maxWidth="lg" sx={{ pt: { xs: 6, md: 10 }, pb: { xs: 6, md: 8 } }}>
+      <Container
+        maxWidth="lg"
+        sx={{ pt: { xs: 6, md: 10 }, pb: { xs: 6, md: 8 } }}
+      >
         <Grid container spacing={6} alignItems="center">
           <Grid item xs={12} md={6}>
             <Stack spacing={3}>
               <Chip
-                label="Trusted by ENTC departments"
+                label="Trusted by All departments"
                 color="secondary"
                 sx={{ alignSelf: "flex-start", fontWeight: 600 }}
               />
@@ -74,7 +81,7 @@ const Landing = () => {
                 transition={{ duration: 0.6 }}
               >
                 <Typography variant="h2" sx={{ fontWeight: 700 }}>
-                  UniTrade empowers campus innovation with verified electronics.
+                  AI-assisted marketplace for college projects & lab components
                 </Typography>
               </motion.div>
               <motion.div
@@ -83,15 +90,21 @@ const Landing = () => {
                 transition={{ duration: 0.8 }}
               >
                 <Typography variant="h6" color="text.secondary">
-                  Discover lab-ready components, share notes, and keep every listing HOD approved
-                  before it goes live.
+                  Buy, sell, and discover HOD-verified components, curated
+                  notes, and AI-generated project suggestions — all in one
+                  platform.
                 </Typography>
               </motion.div>
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                 <Button variant="contained" size="large" href="/marketplace">
                   Explore Marketplace
                 </Button>
-                <Button variant="outlined" size="large" color="secondary" href="/notes">
+                <Button
+                  variant="outlined"
+                  size="large"
+                  color="secondary"
+                  href="/notes"
+                >
                   Download Notes
                 </Button>
               </Stack>
@@ -192,7 +205,9 @@ const Landing = () => {
               justifyContent="space-between"
             >
               <Box>
-                <Typography variant="h4">Ready to launch your next project?</Typography>
+                <Typography variant="h4">
+                  Ready to launch your next project?
+                </Typography>
                 <Typography variant="body1" color="text.secondary">
                   Join hundreds of students building smarter electronics faster.
                 </Typography>

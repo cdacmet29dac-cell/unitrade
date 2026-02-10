@@ -1,24 +1,22 @@
 import axios from "axios";
-import { getToken } from "../utils/storage";
 
-/**
- * Central Axios instance
- * Automatically attaches JWT token if available
- */
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
-// Attach token to every request
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+// attach token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("unitrade_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default api;
+
+// helper for file view
+export const fileUrl = (path) => {
+  if (!path) return "";
+  return import.meta.env.VITE_FILE_VIEW_URL + encodeURIComponent(path);
+};

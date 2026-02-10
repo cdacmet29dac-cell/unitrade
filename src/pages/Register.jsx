@@ -1,57 +1,52 @@
 import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 const Register = () => {
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
 
-  // master data
   const [colleges, setColleges] = useState([]);
   const [departments, setDepartments] = useState([]);
 
-  // selected values
   const [collegeId, setCollegeId] = useState("");
   const [departmentId, setDepartmentId] = useState("");
-  const [roleId, setRoleId] = useState(1); // STUDENT = 1
+  const roleId = 1; // STUDENT
 
-  // load colleges
+  const [loading, setLoading] = useState(false);
+
+  // Load colleges
   useEffect(() => {
-    const loadColleges = async () => {
-      try {
-        const res = await api.get("/colleges");
-        setColleges(res.data);
-      } catch {
-        alert("Failed to load colleges");
-      }
-    };
-    loadColleges();
+    api.get("/colleges").then((res) => setColleges(res.data));
   }, []);
 
-  // load departments when college changes
+  // Load departments
   useEffect(() => {
-    if (!collegeId) {
-      setDepartments([]);
-      return;
-    }
-
-    const loadDepartments = async () => {
-      try {
-        const res = await api.get(`/colleges/${collegeId}/departments`);
-        setDepartments(res.data);
-      } catch {
-        alert("Failed to load departments");
-      }
-    };
-
-    loadDepartments();
+    if (!collegeId) return setDepartments([]);
+    api
+      .get(`/colleges/${collegeId}/departments`)
+      .then((res) => setDepartments(res.data));
   }, [collegeId]);
 
-  const handleRegister = async (event) => {
-    event.preventDefault();
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
     try {
+      setLoading(true);
       const res = await api.post("/auth/register", {
         name,
         email,
@@ -62,115 +57,149 @@ const Register = () => {
         department: { id: departmentId },
       });
 
-      // 🔹 IMPORTANT: store userId for upload-id stepn
       localStorage.setItem("userId", res.data.userId);
-
       alert("Registration successful. Upload your college ID.");
-      window.location.href = "/upload-id";
-    } catch (error) {
+      navigate("/upload-id");
+    } catch (err) {
       alert(
-        error.response?.data?.message ||
-          "Registration failed. Please try again.",
+        err.response?.data?.message || "Registration failed. Please try again.",
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <section className="auth-page">
-      <div className="auth-card">
-        <h1>Create account</h1>
-        <p className="text-muted">
-          Join UniTrade with your college credentials.
-        </p>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Card
+        sx={{
+          width: "100%",
+          maxWidth: 480,
+          borderRadius: 4,
+          boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Stack spacing={3}>
+            {/* Header */}
+            <Box textAlign="center">
+              <Typography variant="h4" fontWeight={700}>
+                Create account ✨
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mt={1}>
+                Join UniTrade using your college credentials
+              </Typography>
+            </Box>
 
-        <form className="auth-form" onSubmit={handleRegister}>
-          <label>
-            Full name
-            <input
-              type="text"
-              placeholder="Alex Johnson"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </label>
+            {/* Form */}
+            <Stack spacing={2} component="form" onSubmit={handleRegister}>
+              <TextField
+                label="Full name"
+                placeholder="Alex Johnson"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
 
-          <label>
-            Email
-            <input
-              type="email"
-              placeholder="alex@college.edu"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
+              <TextField
+                label="Email"
+                placeholder="alex@college.edu"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
 
-          <label>
-            Password
-            <input
-              type="password"
-              placeholder="Set a strong password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
+              <TextField
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-          <label>
-            Phone
-            <input
-              type="tel"
-              placeholder="+91XXXXXXXXXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
-          </label>
+              <TextField
+                label="Phone"
+                placeholder="+91XXXXXXXXXX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+              />
 
-          {/* SAME UI – just dropdown instead of hidden */}
-          <label>
-            College
-            <select
-              value={collegeId}
-              onChange={(e) => setCollegeId(e.target.value)}
-              required
+              <TextField
+                select
+                label="College"
+                value={collegeId}
+                onChange={(e) => setCollegeId(e.target.value)}
+                required
+              >
+                <MenuItem value="">Select college</MenuItem>
+                {colleges.map((c) => (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                select
+                label="Department"
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
+                required
+                disabled={!collegeId}
+              >
+                <MenuItem value="">Select department</MenuItem>
+                {departments.map((d) => (
+                  <MenuItem key={d.id} value={d.id}>
+                    {d.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={loading}
+                sx={{ py: 1.2 }}
+              >
+                {loading ? "Creating account..." : "Register"}
+              </Button>
+            </Stack>
+
+            {/* Footer */}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
             >
-              <option value="">Select college</option>
-              {colleges.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Department
-            <select
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-              required
-            >
-              <option value="">Select department</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button className="btn btn--primary" type="submit">
-            Register
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <a href="/login">Already have an account?</a>
-        </div>
-      </div>
-    </section>
+              Already have an account?{" "}
+              <Box
+                component="span"
+                sx={{
+                  color: "primary.main",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Box>
+            </Typography>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

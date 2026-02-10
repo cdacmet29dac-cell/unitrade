@@ -1,151 +1,116 @@
 import { useState } from "react";
 import {
   AppBar,
-  Badge,
   Box,
   Drawer,
   IconButton,
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
-  Stack,
   Toolbar,
   Typography,
+  Divider,
+  Fab,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LogoutIcon from "@mui/icons-material/Logout";
+import CloseIcon from "@mui/icons-material/Close";
 import { NavLink } from "react-router-dom";
 import { clearToken, getRole } from "../../utils/storage";
 
 const drawerWidth = 260;
 
 const DashboardLayout = ({ menuItems = [], children }) => {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const role = (getRole() || "guest").toUpperCase();
+  const [open, setOpen] = useState(false);
+  const role = getRole();
 
-  const handleLogout = () => {
+  const logout = () => {
     clearToken();
     window.location.href = "/login";
   };
 
-  const navList = (
-    <List sx={{ px: 1 }}>
-      {menuItems.map((item) => (
-        <ListItem key={item.label} disablePadding>
-          <ListItemButton
-            component={NavLink}
-            to={item.path}
-            onClick={() => setMobileOpen(false)}
-            sx={{
-              borderRadius: 2,
-              mb: 1,
-              "&.active": {
-                bgcolor: "rgba(37, 99, 235, 0.2)",
-                color: "primary.main",
-              },
-            }}
-          >
-            <ListItemIcon sx={{ color: "inherit" }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
+  const drawer = (
+    <Box sx={{ width: drawerWidth }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Typography fontWeight={700}>UniTrade</Typography>
+        <IconButton onClick={() => setOpen(false)}>
+          <CloseIcon />
+        </IconButton>
+      </Toolbar>
+
+      <Divider />
+
+      <List>
+        {menuItems.map((item) => (
+          <ListItem key={item.label} disablePadding>
+            <ListItemButton
+              component={NavLink}
+              to={item.path}
+              onClick={() => setOpen(false)}
+            >
+              <ListItemText primary={item.label} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+
+        <Divider sx={{ my: 1 }} />
+
+        <ListItem disablePadding>
+          <ListItemButton onClick={logout}>
+            <LogoutIcon sx={{ mr: 1 }} />
+            Logout
           </ListItemButton>
         </ListItem>
-      ))}
-    </List>
+      </List>
+    </Box>
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-      <AppBar position="fixed" elevation={0} color="transparent">
-        <Toolbar sx={{ px: { xs: 2, md: 4 }, justifyContent: "space-between" }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              color="inherit"
-              onClick={() => setMobileOpen(true)}
-              sx={{ display: { xs: "inline-flex", md: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              UniTrade
-            </Typography>
-          </Stack>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Badge
-              color="secondary"
-              badgeContent={role}
-              sx={{
-                "& .MuiBadge-badge": {
-                  right: -16,
-                  top: 6,
-                  padding: "0 10px",
-                  borderRadius: 20,
-                },
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Role
-              </Typography>
-            </Badge>
-            <IconButton color="inherit" onClick={handleLogout}>
-              <LogoutIcon />
-            </IconButton>
-          </Stack>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#0b1220", color: "#fff" }}>
+      {/* Top bar */}
+      <AppBar position="sticky" sx={{ bgcolor: "#0f172a" }}>
+        <Toolbar>
+          <Typography variant="h6" fontWeight={700}>
+            UniTrade <span style={{ color: "#f97316" }}>({role})</span>
+          </Typography>
         </Toolbar>
       </AppBar>
 
-      <Box
-        component="nav"
+      {/* Floating hamburger */}
+      <Fab
+        color="primary"
+        onClick={() => setOpen(true)}
         sx={{
-          width: { md: drawerWidth },
-          flexShrink: { md: 0 },
-          pt: { xs: 7, md: 8 },
+          position: "fixed",
+          bottom: 24,
+          left: 24,
+          zIndex: 2000,
+          bgcolor: "#f97316",
+          "&:hover": { bgcolor: "#ea580c" },
         }}
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
-          ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: "block", md: "none" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              bgcolor: "background.paper",
-            },
-          }}
-        >
-          {navList}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", md: "block" },
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              bgcolor: "background.paper",
-              borderRight: "1px solid rgba(148, 163, 184, 0.2)",
-            },
-          }}
-          open
-        >
-          <Toolbar />
-          {navList}
-        </Drawer>
-      </Box>
+        <MenuIcon />
+      </Fab>
 
-      <Box
-        component="main"
+      {/* Sidebar Drawer */}
+      <Drawer
+        anchor="left"
+        open={open}
+        onClose={() => setOpen(false)}
+        ModalProps={{ keepMounted: true }}
         sx={{
-          flexGrow: 1,
-          px: { xs: 2, md: 4 },
-          pb: 6,
-          pt: { xs: 10, md: 12 },
+          "& .MuiDrawer-paper": {
+            bgcolor: "#020617",
+            color: "#fff",
+          },
         }}
       >
-        {children}
-      </Box>
+        {drawer}
+      </Drawer>
+
+      {/* Page content */}
+      <Box sx={{ p: { xs: 2, md: 4 } }}>{children}</Box>
     </Box>
   );
 };
