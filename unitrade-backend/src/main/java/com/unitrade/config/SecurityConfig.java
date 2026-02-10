@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/products/live").authenticated()
                 .requestMatchers("/api/products/student/**").hasAuthority("ROLE_STUDENT")
                 .requestMatchers("/api/products/hod/**").hasAuthority("ROLE_HOD")
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
 
                 // ROLE-BASED APIs
                 // NOTE: Spring expects ROLE_HOD / ROLE_ADMIN
